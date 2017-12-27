@@ -1,38 +1,39 @@
 <template>
   <div id="app" class="container-fluid">
     <header>
-     <div class="navbar-fixed">
-      <nav>
-        <div class="nav-wrapper indigo">
-          <a href="#" class="brand-logo"><img src="./assets/logo.png" width="300px" /></a>
-        </div>
-      </nav>
-     </div>
+      <div class="navbar-fixed indigo">
+        <nav class="indigo">
+          <div class="nav-wrapper indigo">
+            <a href="#" class="brand-logo center">
+              <!--<img src="./assets/logo.png" width="300" class=""/>-->
+              DustIn Time
+            </a>
+            <!--<h1 id="page-title" class="center">-->
+              <!--Administracija-->
+            <!--</h1>-->
+          </div>
+
+        </nav>
+
+      </div>
     </header>
     <main>
       <router-view></router-view>
     </main>
     <footer class="page-footer indigo">
-
-      <div class="row">
-        <div class="col s12 center">
-          <h5 class="white-text">&copy; 2017-2018 JustIn Time</h5>
-        </div>
-      </div>
-
-
+      <h5 class="white-text center">&copy; 2017-2018 Alen Duda</h5>
     </footer>
   </div>
 </template>
 
 <script>
-export default {
-  name: "app"
-};
+  export default {
+    name: "app"
+  };
 </script>
 
 <style>
-body {
+  body {
     display: flex;
     min-height: 100vh !important;
     flex-direction: column;
@@ -41,4 +42,14 @@ body {
   main {
     flex: 1 0 auto !important;
   }
+
+  .page-footer {
+    padding: 10px 5px;
+  }
+
+  #page-title {
+    margin: 20px 0;
+    font-size: 2rem;
+  }
+
 </style>
