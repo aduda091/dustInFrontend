@@ -4,63 +4,82 @@
     <div class="col m3 s12">
       <ul class="collection with-header">
         <li class="collection-header">Odabir ustanove:</li>
-        <li class="collection-item" v-for="facility in facilities" :key="facility._id">
+        <li class="collection-item" v-for="facility in facilities" :key="facility._id"
+            @click="populateQueues(facility._id)">
           <a href="#">{{facility.name}}</a>
         </li>
       </ul>
     </div>
     <div class="col m9 s12">
       <div class="row">
-        <div class="input-field col s12">
-          <select name="queues" id="queues" class="browser-default" title="Odabir reda">
+        <div class="col s12 m1 center" id="queues-label">
+          Red:
+        </div>
+        <div class="input-field col s12 m11">
+          <select name="queues" id="queues" class="browser-default" title="Odabir reda" v-model="currentQueue">
             <option value="" disabled selected>Odaberite red:</option>
-            <option v-for="queue in queues" :key="queue._id"
-                    :value="queue._id">{{queue.name}}
+            <option v-for="queue in queues"
+                    :key="queue._id"
+                    :value="queue._id">
+
+              {{queue.name}}
             </option>
 
           </select>
         </div>
       </div>
 
-      <div class="row">
-        <div class="card col m3 s12 card-line valign-wrapper black red-text" title="Trenutni broj">
-          <div id="current-number">123</div>
-        </div>
+      <template v-if="reservations">
+        <div class="row">
+          <div class="card col m3 s12 card-line valign-wrapper black red-text" title="Trenutni broj">
+            <div id="current-number">{{currentReservation.number}}</div>
+          </div>
 
-        <div class="card col m3 s12 offset-m1 card-line valign-wrapper left" title="Trenutni klijent">
-          <div class="card-content">
-            <span class="card-title">Info o klijentu: </span>
-            <p><span class="title">Ime:</span> Alen Duda</p>
-            <p><span class="title">Mail:</span> alenduda@gmail.com</p>
-            <p><span class="title">Vrijeme:</span> 27.12.2017. 13:37</p>
+          <div class="card col m3 s12 offset-m1 card-line valign-wrapper left" title="Trenutni klijent">
+            <div class="card-content">
+              <span class="card-title">Info o klijentu: </span>
+              <p><span class="title">Ime:</span>{{currentReservation.user.firstName}}
+                {{currentReservation.user.lastName}}</p>
+              <p><span class="title">Mail:</span> {{currentReservation.user.mail}}</p>
+              <p><span class="title">Vrijeme:</span> {{currentReservation.time | toHrTime}}</p>
+            </div>
+          </div>
+
+          <div class="card-panel green white-text col m3 s12 offset-m1 card-line valign-wrapper"
+               title="Sljedeći klijent">
+            <div id="next-button">
+              <i class="material-icons">fast_forward</i>
+            </div>
           </div>
         </div>
 
-        <div class="card-panel green white-text col m3 s12 offset-m1 card-line valign-wrapper"
-             title="Sljedeći klijent">
-          <div id="next-button">
-            <i class="material-icons">fast_forward</i>
+        <div class="row">
+          <AdminUsersTable :reservations="reservations" class="col s12 m6"></AdminUsersTable>
+
+          <div class="card-panel red white-text col m3 s12 offset-m2 valign-wrapper card-line"
+               title="Resetiraj red">
+            <div class="reset-button">
+              <i class="material-icons">refresh</i>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div class="row">
-        <AdminUsersTable :users="users" class="col s12 m6"></AdminUsersTable>
-
-        <div class="card-panel red white-text col m3 s12 offset-m2 valign-wrapper card-line"
+      </template>
+      <template v-else>
+        <h4>Trenutno nema rezervacija u ovom redu</h4>
+        <div class="card-panel red white-text col m3 s12 valign-wrapper card-line"
              title="Resetiraj red">
-          <div id="reset-button">
+          <div class="reset-button">
             <i class="material-icons">refresh</i>
           </div>
         </div>
-      </div>
+      </template>
     </div>
-
 
   </div>
 </template>
 
 <script>
+  import axios from 'axios'
   import AdminUsersTable from './AdminUsersTable.vue'
 
   export default {
@@ -70,71 +89,59 @@
     },
     data() {
       return {
-        facilities: [
-          {
-            _id: "1234",
-            name: "FET"
-          },
-          {
-            _id: "4324",
-            name: "FINA"
-          },
-          {
-            _id: "543435",
-            name: "HZZO"
-          }
-        ],
-        queues: [
-          {
-            _id: "143234",
-            name: "Referada",
-            current: 1
-          },
-          {
-            _id: "143235",
-            name: "ISVU",
-            current: 4
-          },
-          {
-            _id: "143236",
-            name: "Bla",
-            current: 2
-          }
-        ],
-        users: [
-          {
-            firstName: "Alen",
-            lastName: "Duda",
-            mail: "ad@gmail.com",
-            time: "26.12.2017 13:37",
-            number: 1
-          },
-          {
-            firstName: "Marko",
-            lastName: "Brkljača",
-            mail: "mbrka@gmail.com",
-            time: "26.12.2017 13:40",
-            number: 2
-          },
-          {
-            firstName: "Mate",
-            lastName: "Jadreško",
-            mail: "mjad@gmail.com",
-            time: "26.12.2017 13:45",
-            number: 3
-          },
-        ]
+        facilities: null,
+        queues: null,
+        currentFacility: null,
+        currentQueue: null,
+        reservations: null
       }
     },
-    methods: {},
+    methods: {
+      populateFacilities() {
+        axios.get("/facilities").then(response => {
+          this.facilities = response.data;
+          this.populateQueues(response.data[0]._id);
+        }).catch(error => console.log(error));
+      },
+      populateQueues(id) {
+        this.currentFacility = id;
+        axios.get("/facilities/" + id).then(response => {
+          this.queues = response.data.queues;
+          this.currentQueue = response.data.queues[0]._id;
+          this.populateReservations(response.data.queues[0]._id);
+        }).catch(error => console.log(error));
+      },
+      populateReservations(id) {
+        console.log("populiram " + id);
+        axios.get("/reservations/queue/" + id).then(response => {
+          this.reservations = response.data;
+        }).catch(error => {
+          //console.log(error);
+          this.reservations = null;
+        });
+      }
+    },
     computed: {
-      currentUser() {
-        return this.users[0];
+      currentReservation() {
+        if (this.reservations) return this.reservations[0];
+        else return null;
       }
     },
     created() {
-
+      this.populateFacilities();
+    },
+    watch: {
+      currentQueue(newQueue) {
+        console.log("Mijenjam red: " + newQueue);
+        this.populateReservations(newQueue);
+      }
+    },
+    filters: {
+      toHrTime(isoTime) {
+        return new Date(isoTime).toLocaleString("hr");
+      }
     }
+
   }
 </script>
 
@@ -143,6 +150,14 @@
   @font-face {
     font-family: Digital;
     src: url(../assets/digital.ttf);
+  }
+
+  #queues-label {
+    font-size: 1.4rem;
+    /*padding: 5px;*/
+    height: 4rem;
+    margin-top: 1rem;
+    line-height: 4rem;
   }
 
   /* workaround for materialize select issue */
@@ -171,7 +186,7 @@
     font-family: 'Digital', sans-serif;
   }
 
-  #current-number, #next-button, #reset-button {
+  #current-number, #next-button, .reset-button {
     text-align: center;
     width: auto;
     margin: 0 auto;
@@ -179,7 +194,7 @@
     display: block;
   }
 
-  #next-button i, #reset-button i {
+  #next-button i, .reset-button i {
     font-size: 7rem;
     display: block;
     cursor: pointer;

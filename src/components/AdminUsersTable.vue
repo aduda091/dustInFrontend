@@ -10,11 +10,11 @@
     </thead>
 
     <tbody>
-    <tr v-for="user in users" :key="user.id">
-      <td>{{user.firstName}} {{user.lastName}}</td>
+    <tr v-for="reservation in reservations" :key="reservation._id">
+      <td>{{reservation.user.firstName}} {{reservation.user.lastName}}</td>
       <!--<td>{{user.mail}}</td>-->
       <!--<td>{{user.time}}</td>-->
-      <td>{{user.number}}</td>
+      <td>{{reservation.number}}</td>
     </tr>
     </tbody>
   </table>
@@ -23,7 +23,7 @@
 <script>
   export default {
     name: 'AdminUsersTable',
-    props: ['users'],
+    props: ['reservations'],
     data() {
       return {}
     },
