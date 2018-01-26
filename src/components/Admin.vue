@@ -32,7 +32,7 @@
       <template v-if="reservations">
         <div class="row">
           <div class="card col m3 s12 card-line valign-wrapper black red-text" title="Trenutni broj">
-            <div id="current-number">{{currentReservation.number}}</div>
+            <div id="current-number">{{currentNumber}}</div>
           </div>
 
           <div class="card col m3 s12 offset-m1 card-line valign-wrapper left" title="Trenutni klijent">
@@ -46,7 +46,7 @@
           </div>
 
           <div class="card-panel green white-text col m3 s12 offset-m1 card-line valign-wrapper"
-               title="Sljedeći klijent">
+               title="Sljedeći klijent" @click="nextUser">
             <div id="next-button">
               <i class="material-icons">fast_forward</i>
             </div>
@@ -57,7 +57,7 @@
           <AdminUsersTable :reservations="reservations" class="col s12 m6"></AdminUsersTable>
 
           <div class="card-panel red white-text col m3 s12 offset-m2 valign-wrapper card-line"
-               title="Resetiraj red">
+               title="Resetiraj red" @click="resetQueue">
             <div class="reset-button">
               <i class="material-icons">refresh</i>
             </div>
@@ -67,7 +67,7 @@
       <template v-else>
         <h4>Trenutno nema rezervacija u ovom redu</h4>
         <div class="card-panel red white-text col m3 s12 valign-wrapper card-line"
-             title="Resetiraj red">
+             title="Resetiraj red" @click="resetQueue">
           <div class="reset-button">
             <i class="material-icons">refresh</i>
           </div>
@@ -82,8 +82,11 @@
   import axios from 'axios'
   import AdminUsersTable from './AdminUsersTable.vue'
 
+  let autoRefresh;
+
   export default {
     name: 'Admin',
+    props: ["token"],
     components: {
       'AdminUsersTable': AdminUsersTable
     },
@@ -93,7 +96,8 @@
         queues: null,
         currentFacility: null,
         currentQueue: null,
-        reservations: null
+        reservations: null,
+        currentNumber: 0
       }
     },
     methods: {
@@ -113,22 +117,60 @@
       },
       populateReservations(id) {
         console.log("populiram " + id);
+        this.queues.forEach(q => {
+          if (q._id == id) {
+            this.currentNumber = q.current;
+          }
+        })
         axios.get("/reservations/queue/" + id).then(response => {
           this.reservations = response.data;
         }).catch(error => {
           //console.log(error);
           this.reservations = null;
         });
+      },
+      resetQueue() {
+        let url = "/queues/" + this.currentQueue + "/reset";
+        axios.delete(url).then(response => {
+          console.log(response);
+          populateReservations(this.currentQueue);
+        }).catch(err => {
+          alert("Greška!");
+          console.log(err.response.data);
+        })
+      },
+      nextUser() {
+        let url = "/queues/" + this.currentQueue + "/next";
+        axios.delete(url).then(response => {
+          console.log(response.data);
+          this.currentNumber = response.data.reservation.number;
+          populateReservations(this.currentQueue);
+        }).catch(err => {
+         // let status = err.response.status;
+          //if(status == 500) alert("Greška");
+          console.log(err);
+        })
       }
     },
     computed: {
       currentReservation() {
-        if (this.reservations) return this.reservations[0];
+        if (this.reservations) {
+          return this.reservations[0];
+        }
         else return null;
       }
     },
     created() {
+      //send authorization token when sending delete requests
+      axios.defaults.headers.delete["Authorization"] = this.token;
       this.populateFacilities();
+      autoRefresh = setInterval(() => {
+        if(this.currentQueue != null) this.populateReservations(this.currentQueue);
+      }, 4000);
+
+    },
+    destroyed() {
+      clearTimeout(autoRefresh);
     },
     watch: {
       currentQueue(newQueue) {

@@ -5,12 +5,11 @@
         <nav class="indigo">
           <div class="nav-wrapper indigo">
             <a href="#" class="brand-logo center">
-              <!--<img src="./assets/logo.png" width="300" class=""/>-->
-              DustIn Time
+              Administracija
             </a>
-            <!--<h1 id="page-title" class="center">-->
-              <!--Administracija-->
-            <!--</h1>-->
+            <ul v-if="token" class="right">
+              <li title="Odjava"><a href="#" @click="logout">Odjava</a></li>
+            </ul>
           </div>
 
         </nav>
@@ -18,7 +17,7 @@
       </div>
     </header>
     <main>
-      <router-view></router-view>
+      <router-view :token="token"></router-view>
     </main>
     <footer class="page-footer indigo">
       <h5 class="white-text center">&copy; 2017-2018 Alen Duda</h5>
@@ -29,7 +28,31 @@
 <script>
 
   export default {
-    name: "app"
+    name: "app",
+    data() {
+      return {
+        get name() {
+          return localStorage.getItem("name") || null;
+        },
+        get token() {
+          return localStorage.getItem('token') || null;
+        }
+      }
+    },
+    created() {
+      if(localStorage.getItem("token")) {
+        this.$router.replace("/");
+      }
+    },
+    methods: {
+      logout() {
+        localStorage.clear();
+        this.name = null;
+        this.token = null;
+        this.$router.replace("/");
+      }
+    }
+
   };
 </script>
 
