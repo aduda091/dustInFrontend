@@ -3,10 +3,15 @@
     <!--<div class="hide-on-small-only"><h1 class="center">Upravljanje redovima čekanja</h1></div>-->
     <div class="col m3 s12">
       <ul class="collection with-header">
-        <li class="collection-header">Odabir ustanove:</li>
+        <li class="collection-header">
+          Odabir ustanove:
+          <span title="Dodaj ustanovu" @click="addFacility" class="secondary-content badge-crud"><i
+            class="material-icons">add</i></span>
+        </li>
         <li class="collection-item" v-for="facility in facilities" :key="facility._id"
             @click="populateQueues(facility._id)">
           <a href="#">{{facility.name}}</a>
+          <span title="Uredi ustanovu" class="secondary-content badge-crud"><i class="material-icons">edit</i></span>
         </li>
       </ul>
     </div>
@@ -121,7 +126,9 @@
         axios.get("/reservations/queue/" + id).then(response => {
           this.reservations = response.data;
           //set current number of queue
-          axios.get("/queues/" +id).then(r=>{this.currentNumber = r.data.current});
+          axios.get("/queues/" + id).then(r => {
+            this.currentNumber = r.data.current
+          });
         }).catch(error => {
           //console.log(error);
           this.reservations = null;
@@ -142,14 +149,17 @@
         let url = "/queues/" + this.currentQueue + "/next";
         axios.delete(url).then(response => {
           console.log(response.data);
-          if(response.data.number) this.currentNumber = response.data.number;
-          if(response.data.reservation.number) this.currentNumber = response.data.reservation.number;
+          if (response.data.number) this.currentNumber = response.data.number;
+          if (response.data.reservation.number) this.currentNumber = response.data.reservation.number;
           populateReservations(this.currentQueue);
         }).catch(err => {
-         // let status = err.response.status;
+          // let status = err.response.status;
           //if(status == 500) alert("Greška");
           console.log(err);
         })
+      },
+      addFacility() {
+        this.$router.push("/addFacility");
       }
     },
     computed: {
@@ -165,7 +175,7 @@
       axios.defaults.headers.delete["Authorization"] = this.token;
       this.populateFacilities();
       autoRefresh = setInterval(() => {
-        if(this.currentQueue != null) this.populateReservations(this.currentQueue);
+        if (this.currentQueue != null) this.populateReservations(this.currentQueue);
       }, 4000);
 
     },
@@ -239,6 +249,10 @@
   #next-button i, .reset-button i {
     font-size: 7rem;
     display: block;
+    cursor: pointer;
+  }
+
+  .badge-crud {
     cursor: pointer;
   }
 </style>
