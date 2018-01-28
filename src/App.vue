@@ -1,9 +1,9 @@
 <template>
   <div id="app" class="container-fluid">
     <header>
-      <div class="navbar-fixed indigo">
-        <nav class="indigo">
-          <div class="nav-wrapper indigo">
+      <div class="navbar-fixed purple darken-4">
+        <nav class="purple darken-4">
+          <div class="nav-wrapper purple darken-4">
             <a href="#" class="brand-logo center">
               Administracija
             </a>
@@ -19,7 +19,7 @@
     <main>
       <router-view :token="token"></router-view>
     </main>
-    <footer class="page-footer indigo">
+    <footer class="page-footer purple darken-4">
       <h5 class="white-text center">&copy; 2017-2018 Alen Duda</h5>
     </footer>
   </div>

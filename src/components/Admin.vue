@@ -117,13 +117,11 @@
       },
       populateReservations(id) {
         console.log("populiram " + id);
-        this.queues.forEach(q => {
-          if (q._id == id) {
-            this.currentNumber = q.current;
-          }
-        })
+
         axios.get("/reservations/queue/" + id).then(response => {
           this.reservations = response.data;
+          //set current number of queue
+          axios.get("/queues/" +id).then(r=>{this.currentNumber = r.data.current});
         }).catch(error => {
           //console.log(error);
           this.reservations = null;
@@ -132,10 +130,11 @@
       resetQueue() {
         let url = "/queues/" + this.currentQueue + "/reset";
         axios.delete(url).then(response => {
+          alert("Red uspješno resetiran!")
           console.log(response);
           populateReservations(this.currentQueue);
         }).catch(err => {
-          alert("Greška!");
+          //alert("Greška!");
           console.log(err.response.data);
         })
       },
@@ -143,7 +142,8 @@
         let url = "/queues/" + this.currentQueue + "/next";
         axios.delete(url).then(response => {
           console.log(response.data);
-          this.currentNumber = response.data.reservation.number;
+          if(response.data.number) this.currentNumber = response.data.number;
+          if(response.data.reservation.number) this.currentNumber = response.data.reservation.number;
           populateReservations(this.currentQueue);
         }).catch(err => {
          // let status = err.response.status;
