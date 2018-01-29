@@ -33,7 +33,6 @@
 
               {{queue.name}}
             </option>
-
           </select>
         </div>
       </div>
