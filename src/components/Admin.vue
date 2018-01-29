@@ -11,7 +11,11 @@
         <li class="collection-item" v-for="facility in facilities" :key="facility._id"
             @click="populateQueues(facility._id)">
           <a href="#">{{facility.name}}</a>
-          <span title="Uredi ustanovu" class="secondary-content badge-crud"><i class="material-icons">edit</i></span>
+          <span title="Uredi ustanovu" class="secondary-content badge-crud">
+            <router-link :to="'/editFacility/' + facility._id">
+              <i class="material-icons">edit</i>
+            </router-link>
+          </span>
         </li>
       </ul>
     </div>
