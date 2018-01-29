@@ -182,7 +182,7 @@
       }, 4000);
 
     },
-    destroyed() {
+    beforeDestroy() {
       clearTimeout(autoRefresh);
     },
     watch: {

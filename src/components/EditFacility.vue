@@ -1,7 +1,7 @@
 <template>
 
   <div class="row">
-    <form class="col s12 center" @submit.prevent="editFacility">
+    <form class="col s12 m6 offset-m3 center" @submit.prevent="editFacility">
       <h3>
         <router-link to="/admin"><i class="material-icons small">arrow_back</i></router-link>
         Izmjena ustanove:
@@ -30,6 +30,22 @@
       </div>
 
     </form>
+
+    <div class="col s12 m4 offset-m4 center">
+      <ul class="collection with-header">
+        <li class="collection-header">
+          <h5>Redovi: <span @click.prevent="addQueue()" class="secondary-content" title="Dodaj red"><a href="#"><i class="material-icons">add</i></a></span></h5>
+
+        </li>
+
+        <li class="collection-item" v-for="queue in queues" :key="queue._id">
+          {{queue.name}}
+          <span @click.prevent="editQueue(queue._id, queue.name)" title="Uredi ime reda" class="secondary-content">
+            <a href="#"><i class="material-icons">edit</i></a>
+          </span>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -45,7 +61,8 @@
         name: null,
         address: null,
         mail: null,
-        telephone: null
+        telephone: null,
+        queues: []
       }
     },
     created() {
@@ -55,12 +72,13 @@
     },
     methods: {
       populateFacility() {
-        axios.get("/facilities/" + this.id).then(response=> {
+        axios.get("/facilities/" + this.id).then(response => {
           let facility = response.data;
           this.name = facility.name;
           this.address = facility.address;
           this.mail = facility.mail;
           this.telephone = facility.telephone;
+          this.queues = facility.queues;
         })
       },
       editFacility() {
@@ -78,6 +96,25 @@
           //alert("Neuspješno dodavanje ustanove!");
           console.log(err);
         })
+      },
+      addQueue() {
+        let queueName = prompt("Ime reda:");
+        if(queueName.trim()) {
+          // console.log(queueName);
+          axios.post("/facilities/" + this.id, {name: queueName}).then(response => {
+            this.populateFacility();
+          })
+        }
+      },
+      editQueue(queueId, oldName) {
+        // console.log("editing queue " +queueId);
+        let queueName = prompt("Ime reda:", oldName);
+        if(queueName.trim()) {
+          // console.log(queueName);
+          axios.put("/queues/" + queueId, {name: queueName}).then(response => {
+            this.populateFacility();
+          })
+        }
       }
     }
   }
